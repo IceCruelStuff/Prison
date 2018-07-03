@@ -3,9 +3,11 @@
 namespace Prison;
 
 use _64FF00\PurePerms\PurePerms;
+use falkirks\minereset\Mine;
 use falkirks\minereset\MineReset;
 use onebone\economyapi\EconomyAPI;
 use pocketmine\item\Item;
+use pocketmine\level\Position;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
 use Prison\commands\MystatusCommand;
@@ -183,6 +185,13 @@ class Main extends PluginBase{
 
     public function getMultiplier(Player $player) : float{
         return $this->getBaseMultiplier() + ($this->getPrestige($player) !== $this->getNoPrestigeTag() ? $this->getPrestige($player) * $this->getConfig()->get("multiplier-increase") : 0);
+    }
+
+    public function getMineByPosition(Position $position) : ?Mine{
+        foreach($this->getMineReset()->getMineManager()->getMines() as $mine){
+            if($mine->isPointInside($position)) return $mine;
+        }
+        return null;
     }
 
     public function getMineReset() : MineReset{

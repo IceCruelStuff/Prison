@@ -24,7 +24,7 @@ class EventListener implements Listener{
 
     public function onBreak(BlockBreakEvent $event) : void{
         if(in_array($event->getPlayer()->getLevel()->getFolderName(), $this->plugin->getConfig()->get("worlds"))){
-            if($this->plugin->getMineReset()->getRegionBlockerListener()->getMineByPosition($event->getBlock()) === null){
+            if($this->plugin->getMineByPosition($event->getBlock()) === null){
                 $event->setCancelled(true);
             }
         }
