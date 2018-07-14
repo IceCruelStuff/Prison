@@ -23,7 +23,7 @@ class Main extends PluginBase{
     /** @var array */
     private $blocks = [];
     /** @var array */
-    private $prestiges = [];
+    private $prestiges = [];//index => ["tag" => tag, "money" => money]
     /** @var array */
     private $players = [];//name => ["rank" => rank, "prestige" => prestige]
 
@@ -31,10 +31,12 @@ class Main extends PluginBase{
         $this->saveDefaultConfig();
         $this->ranks = $this->getConfig()->get("ranks");
         $this->blocks = $this->getConfig()->get("blocks");
-        $this->prestiges[$this->getNoPrestigeTag()] = 0;
+        $this->prestiges[0] = ["tag" => $this->getNoPrestigeTag(), "money" => 0];
         $configPrestiges = $this->getConfig()->get("prestiges");
+        $index = 1;
         foreach($configPrestiges as $prestige => $money){
-            $this->prestiges[$prestige] = $money;
+            $this->prestiges[$index] = ["tag" => $prestige, "money" => $money];
+            $index++;
         }
         if(!file_exists($this->getDataFolder() . "players.json")){
             file_put_contents($this->getDataFolder() . "players.json", json_encode([]));
@@ -92,6 +94,14 @@ class Main extends PluginBase{
         return $this->players[$player->getLowerCaseName()]["prestige"];
     }
 
+    public function getPrestigeIndex(Player $player) : int{
+        $key = $this->getPrestige($player);
+        foreach($this->prestiges as $index => $prestige){
+            if($key === $prestige["tag"]) return $index;
+        }
+        return 0;
+    }
+
     public function getPrestiges() : array{
         return $this->prestiges;
     }
@@ -128,13 +138,15 @@ class Main extends PluginBase{
             }
         }else{
             $next = $this->getNextPrestige($player);
-            if($next !== "" and $this->getEconomyAPI()->myMoney($player) >= $this->prestiges[$next]){
+            if($next !== "" and $this->getEconomyAPI()->myMoney($player) >= $this->getPrestigeMoney($next)){
                 $this->players[$player->getLowerCaseName()]["rank"] = "A";
                 $this->players[$player->getLowerCaseName()]["prestige"] = $next;
                 $player->sendMessage(str_replace("{rank}", $next, $this->getConfig()->get("rankup-message")));
                 if($this->getConfig()->get("reset-money-on-prestige")){
                     $player->sendMessage($this->getConfig()->get("reset-money-message"));
                     $this->getEconomyAPI()->reduceMoney($player, $this->getEconomyAPI()->myMoney($player));
+                }else{
+                    $this->getEconomyAPI()->reduceMoney($player, $this->getPrestigeMoney($next));
                 }
                 $this->getServer()->broadcastMessage(str_replace(["{name}", "{prestige}"], [$player->getName(), $next], $this->getConfig()->get("prestige-broadcast")));
                 $this->removeAllPermissions($player->getName());
@@ -157,17 +169,24 @@ class Main extends PluginBase{
     public function getNextPrestige(Player $player) : string{
         $key = $this->getPrestige($player);
         $next = false;
-        foreach($this->prestiges as $prestige => $price){
-            if($next) return $prestige;
-            if($prestige === $key) $next = true;
+        foreach($this->prestiges as $index => $prestige){
+            if($next) return $prestige["tag"];
+            if($prestige["tag"] === $key) $next = true;
         }
         return "";
+    }
+
+    public function getPrestigeMoney(string $name) : int{
+        foreach($this->prestiges as $index => $prestige){
+            if($prestige["tag"] === $name) return $prestige["money"];
+        }
+        return 0;
     }
 
     public function calculateMoney(Player $player) : int{
         if($this->getNextRank($player) === ""){
             if(isset($this->players[$player->getLowerCaseName()]["prestige"])){
-                return $this->prestiges[$this->getNextPrestige($player)];
+                return $this->prestiges[$this->getNextPrestige($player)]["money"];
             }
         }
         return $this->ranks[$this->getNextRank($player)];
@@ -180,11 +199,11 @@ class Main extends PluginBase{
     }
 
     public function getBaseMultiplier() : float {
-        return $this->getConfig()->get("multiplier-base");
+        return (float)$this->getConfig()->get("multiplier-base");
     }
 
     public function getMultiplier(Player $player) : float{
-        return $this->getBaseMultiplier() + ($this->getPrestige($player) !== $this->getNoPrestigeTag() ? $this->getPrestige($player) * (float)$this->getConfig()->get("multiplier-increase") : 0);
+        return $this->getBaseMultiplier() + ($this->getPrestige($player) !== $this->getNoPrestigeTag() ? $this->getPrestigeIndex($player) * (float)$this->getConfig()->get("multiplier-increase") : 0);
     }
 
     public function getMineByPosition(Position $position) : ?Mine{
