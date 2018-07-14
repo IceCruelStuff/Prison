@@ -184,7 +184,7 @@ class Main extends PluginBase{
     }
 
     public function getMultiplier(Player $player) : float{
-        return $this->getBaseMultiplier() + ($this->getPrestige($player) !== $this->getNoPrestigeTag() ? $this->getPrestige($player) * $this->getConfig()->get("multiplier-increase") : 0);
+        return $this->getBaseMultiplier() + ($this->getPrestige($player) !== $this->getNoPrestigeTag() ? $this->getPrestige($player) * (float)$this->getConfig()->get("multiplier-increase") : 0);
     }
 
     public function getMineByPosition(Position $position) : ?Mine{

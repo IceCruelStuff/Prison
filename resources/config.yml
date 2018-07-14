@@ -42,14 +42,14 @@ chat-format: "§2[{prestige}][{rank}] §r{default format}"
 mystatus-message: "§2Your status:\n§6Rank: {rank}\nPrestige: {prestige}\nNext rank: {next rank}\nNext prestige: {next prestige}\nMoney missing: {money missing}"
 #List of all prison ranks with relative name and rankup cost, you can add as many ranks as you want
 ranks:
-  A: 0
-  B: 5000
-  C: 15000
+  "A": 0
+  "B": 5000
+  "C": 15000
 #The list of all prestiges with relative name and cost, you can add as many prestiges as you want
 prestiges:
-  P1: 500000
-  P2: 1000000
-  P3: 2000000
+  "P1": 500000
+  "P2": 1000000
+  "P3": 2000000
 #The selling cost of every block/item. Note: the price is relative to 1 block/item. Format: "id:meta": selling cost
 blocks:
   "1:0": 5
