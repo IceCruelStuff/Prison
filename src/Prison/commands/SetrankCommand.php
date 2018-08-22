@@ -28,7 +28,8 @@ class SetrankCommand extends PluginCommand{
                 $sender->sendMessage(TextFormat::RED . "Usage: /setrank <name> <rank>");
                 return true;
             }
-            $player = array_shift($this->plugin->getServer()->matchPlayer($args[0]));
+            $matches = $this->plugin->getServer()->matchPlayer($args[0]);
+            $player = array_shift($matches);
             if($player === null){
                 $sender->sendMessage(TextFormat::RED . "Player not found.");
                 return true;
