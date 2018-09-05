@@ -186,7 +186,7 @@ class Main extends PluginBase{
     public function calculateMoney(Player $player) : int{
         if($this->getNextRank($player) === ""){
             if(isset($this->players[$player->getLowerCaseName()]["prestige"])){
-                return $this->prestiges[$this->getNextPrestige($player)]["money"];
+                return $this->getNextPrestige($player) !== "" ? $this->prestiges[$this->getNextPrestige($player)]["money"] : 0;
             }
         }
         return $this->ranks[$this->getNextRank($player)];
